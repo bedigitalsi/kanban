@@ -56,7 +56,7 @@
                 </div>
                 <div class="p-4 space-y-3 min-h-[300px]" data-column="backlog">
                     <template x-for="task in tasksByStatus.backlog" :key="task.id">
-                        <div x-html="renderTaskCard(task)" @click="openEditTask(task)" class="cursor-pointer"></div>
+                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="openEditTask(task)" class="cursor-pointer"></div>
                     </template>
                 </div>
             </div>
@@ -74,7 +74,7 @@
                 </div>
                 <div class="p-4 space-y-3 min-h-[300px]" data-column="todo">
                     <template x-for="task in tasksByStatus.todo" :key="task.id">
-                        <div x-html="renderTaskCard(task)" @click="openEditTask(task)" class="cursor-pointer"></div>
+                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="openEditTask(task)" class="cursor-pointer"></div>
                     </template>
                 </div>
             </div>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="p-4 space-y-3 min-h-[300px]" data-column="in_progress">
                     <template x-for="task in tasksByStatus.in_progress" :key="task.id">
-                        <div x-html="renderTaskCard(task)" @click="openEditTask(task)" class="cursor-pointer"></div>
+                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="openEditTask(task)" class="cursor-pointer"></div>
                     </template>
                 </div>
             </div>
@@ -110,7 +110,7 @@
                 </div>
                 <div class="p-4 space-y-3 min-h-[300px]" data-column="done">
                     <template x-for="task in tasksByStatus.done" :key="task.id">
-                        <div x-html="renderTaskCard(task)" @click="openEditTask(task)" class="cursor-pointer"></div>
+                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="openEditTask(task)" class="cursor-pointer"></div>
                     </template>
                 </div>
             </div>
@@ -214,7 +214,9 @@
                 tagsInput: '',
 
                 init() {
-                    this.initializeSortable();
+                    this.$nextTick(() => {
+                        this.initializeSortable();
+                    });
                 },
 
                 initializeSortable() {
