@@ -54,7 +54,7 @@
                 </div>
                 <div class="p-4 space-y-3 min-h-[300px]" data-column="backlog">
                     <template x-for="task in tasksByStatus.backlog" :key="task.id">
-                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="openEditTask(task)" class="cursor-pointer"></div>
+                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="handleCardClick(task, $event)" class="task-wrapper cursor-pointer"></div>
                     </template>
                 </div>
             </div>
@@ -72,7 +72,7 @@
                 </div>
                 <div class="p-4 space-y-3 min-h-[300px]" data-column="todo">
                     <template x-for="task in tasksByStatus.todo" :key="task.id">
-                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="openEditTask(task)" class="cursor-pointer"></div>
+                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="handleCardClick(task, $event)" class="task-wrapper cursor-pointer"></div>
                     </template>
                 </div>
             </div>
@@ -90,7 +90,7 @@
                 </div>
                 <div class="p-4 space-y-3 min-h-[300px]" data-column="in_progress">
                     <template x-for="task in tasksByStatus.in_progress" :key="task.id">
-                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="openEditTask(task)" class="cursor-pointer"></div>
+                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="handleCardClick(task, $event)" class="task-wrapper cursor-pointer"></div>
                     </template>
                 </div>
             </div>
@@ -108,7 +108,7 @@
                 </div>
                 <div class="p-4 space-y-3 min-h-[300px]" data-column="done">
                     <template x-for="task in tasksByStatus.done" :key="task.id">
-                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="openEditTask(task)" class="cursor-pointer"></div>
+                        <div x-html="renderTaskCard(task)" :data-task-id="task.id" @click="handleCardClick(task, $event)" class="task-wrapper cursor-pointer"></div>
                     </template>
                 </div>
             </div>
@@ -122,7 +122,7 @@
                 <div class="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75" @click="closeModal()"></div>
             </div>
 
-            <div x-show="showModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div x-show="showModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="relative z-10 inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
                 <div>
                     <div class="mt-3 text-center sm:mt-0 sm:text-left">
                         <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" x-text="editingTask ? 'Edit Task' : 'Add New Task'"></h3>
@@ -217,28 +217,61 @@
                     });
                 },
 
+                _dragging: false,
+
                 initializeSortable() {
                     const columns = document.querySelectorAll('[data-column]');
                     columns.forEach(column => {
                         new Sortable(column, {
                             group: 'shared',
+                            draggable: '.task-wrapper',
                             animation: 150,
                             ghostClass: 'opacity-50',
                             chosenClass: 'ring-2 ring-indigo-500',
+                            onStart: () => {
+                                this._dragging = true;
+                            },
                             onEnd: (evt) => {
-                                this.handleDragEnd(evt);
+                                const taskId = parseInt(evt.item.getAttribute('data-task-id'));
+                                const newStatus = evt.to.dataset.column;
+                                const newIndex = evt.newIndex;
+
+                                // CRITICAL: Revert Sortable's DOM manipulation.
+                                // Alpine's x-for owns these DOM nodes — if Sortable moves them,
+                                // Alpine's reconciliation breaks (duplicates/missing cards).
+                                // We put the element back, then update Alpine data so Alpine
+                                // handles the DOM change itself.
+                                const fromChildren = Array.from(evt.from.querySelectorAll(':scope > .task-wrapper'));
+                                if (evt.from !== evt.to) {
+                                    evt.to.removeChild(evt.item);
+                                    if (evt.oldIndex >= fromChildren.length) {
+                                        evt.from.appendChild(evt.item);
+                                    } else {
+                                        evt.from.insertBefore(evt.item, fromChildren[evt.oldIndex]);
+                                    }
+                                } else {
+                                    // Same column reorder: revert to original position
+                                    const ref = fromChildren[evt.oldIndex];
+                                    if (ref) {
+                                        evt.from.insertBefore(evt.item, ref);
+                                    } else {
+                                        evt.from.appendChild(evt.item);
+                                    }
+                                }
+
+                                // Now safely update Alpine data — Alpine will re-render
+                                this.updateTaskPosition(taskId, newStatus, newIndex);
+
+                                setTimeout(() => { this._dragging = false; }, 100);
                             }
                         });
                     });
                 },
 
-                handleDragEnd(evt) {
-                    const newStatus = evt.to.dataset.column;
-                    const taskElement = evt.item;
-                    const taskId = parseInt(taskElement.dataset.taskId);
-                    
-                    // Update the task status and position
-                    this.updateTaskPosition(taskId, newStatus, evt.newIndex);
+                handleCardClick(task, event) {
+                    // Don't open modal if we just finished dragging
+                    if (this._dragging) return;
+                    this.openEditTask(task);
                 },
 
                 updateTaskPosition(taskId, newStatus, newPosition) {
