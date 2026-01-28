@@ -20,8 +20,8 @@
                 <div class="flex items-center space-x-4">
                     <button @click="darkMode = !darkMode; localStorage.setItem('theme', darkMode ? 'dark' : 'light')" 
                             class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
-                        <span x-show="!darkMode">🌙</span>
-                        <span x-show="darkMode">☀️</span>
+                        <span x-show="!darkMode" class="emoji">🌙</span>
+                        <span x-show="darkMode" class="emoji">☀️</span>
                     </button>
 
                     <form action="{{ route('logout') }}" method="POST" class="inline">
@@ -43,7 +43,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                        📝 Backlog
+                        <span class="emoji">📝</span> Backlog
                         <span class="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm px-2 py-1 rounded-full" x-text="getColumnTasks('backlog').length"></span>
                     </h2>
                     <button @click="openAddTask('backlog')" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">+ Add Task</button>
@@ -55,7 +55,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                        🔵 To Do
+                        <span class="emoji">🔵</span> To Do
                         <span class="ml-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-sm px-2 py-1 rounded-full" x-text="getColumnTasks('todo').length"></span>
                     </h2>
                     <button @click="openAddTask('todo')" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">+ Add Task</button>
@@ -67,7 +67,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                        🟡 In Progress
+                        <span class="emoji">🟡</span> In Progress
                         <span class="ml-2 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-sm px-2 py-1 rounded-full" x-text="getColumnTasks('in_progress').length"></span>
                     </h2>
                     <button @click="openAddTask('in_progress')" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">+ Add Task</button>
@@ -79,7 +79,7 @@
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
                 <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <h2 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
-                        ✅ Done
+                        <span class="emoji">✅</span> Done
                         <span class="ml-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 text-sm px-2 py-1 rounded-full" x-text="getColumnTasks('done').length"></span>
                     </h2>
                     <button @click="openAddTask('done')" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">+ Add Task</button>
