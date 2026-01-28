@@ -269,9 +269,12 @@
                         const sortable = new Sortable(column, {
                             group: 'kanban',
                             animation: 150,
-                            ghostClass: 'opacity-50',
-                            chosenClass: 'ring-2 ring-indigo-500',
-                            dragClass: 'rotate-2',
+                            forceFallback: true,
+                            fallbackOnBody: true,
+                            fallbackTolerance: 3,
+                            ghostClass: 'sortable-ghost',
+                            chosenClass: 'sortable-chosen',
+                            dragClass: 'sortable-drag',
                             onStart() {
                                 self._dragging = true;
                             },
@@ -431,14 +434,32 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
+        .task-card {
+            cursor: grab;
+        }
         .task-card:hover {
             transform: translateY(-1px);
         }
-        .sortable-ghost {
-            opacity: 0.5;
+        .task-card:active {
+            cursor: grabbing;
         }
-        .rotate-2 {
+        .sortable-ghost {
+            opacity: 0.4;
+            border: 2px dashed #6366f1;
+            background: #eef2ff !important;
+        }
+        .sortable-chosen {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .sortable-drag {
+            opacity: 0.9;
             transform: rotate(2deg);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        .sortable-fallback {
+            opacity: 0.9;
+            transform: rotate(2deg);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
     </style>
 </body>
