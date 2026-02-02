@@ -52,7 +52,7 @@
                 <div class="text-primary flex size-10 shrink-0 items-center justify-center bg-primary/10 rounded-lg">
                     <span class="material-symbols-outlined">dashboard_customize</span>
                 </div>
-                <h1 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">Task Board</h1>
+                <h1 class="hidden sm:block text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">Task Board</h1>
             </div>
             <div class="flex items-center gap-4">
                 <!-- Tab Switcher -->
@@ -77,7 +77,7 @@
                     <span x-show="darkMode" class="material-symbols-outlined text-[20px]">light_mode</span>
                     <span x-show="!darkMode" class="material-symbols-outlined text-[20px]">dark_mode</span>
                 </button>
-                <form action="{{ route('logout') }}" method="POST" class="inline">
+                <form action="{{ route('logout') }}" method="POST" class="hidden sm:inline">
                     @csrf
                     <button type="submit" class="flex items-center justify-center px-4 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors text-sm font-medium">
                         <span class="material-symbols-outlined text-[18px] mr-1">logout</span>
