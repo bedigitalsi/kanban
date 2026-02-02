@@ -65,6 +65,10 @@
                         <span class="material-symbols-outlined text-[18px]">timeline</span>
                         <span class="hidden sm:inline">Activity</span>
                     </button>
+                    <button @click="activeTab = 'schedule'; fetchScheduledRoutines()" :class="activeTab === 'schedule' ? 'bg-white dark:bg-card-dark text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all">
+                        <span class="material-symbols-outlined text-[18px]">schedule</span>
+                        <span class="hidden sm:inline">Schedule</span>
+                    </button>
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -248,6 +252,92 @@
         </div>
     </div>
 
+    <!-- Schedule View -->
+    <div x-show="activeTab === 'schedule'" x-cloak class="p-4 lg:p-8 max-w-[1200px] mx-auto">
+        <!-- Schedule Header -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">schedule</span>
+                    Alex's Daily Schedule
+                </h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    <span x-text="scheduledRoutines.length"></span> routines configured
+                </p>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <select x-model="scheduleCategoryFilter" @change="fetchScheduledRoutines()" class="flex-1 sm:flex-none px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                    <option value="">All Categories</option>
+                    <option value="email">📧 Email</option>
+                    <option value="sms">📱 SMS</option>
+                    <option value="orders">🛒 Orders</option>
+                    <option value="analysis">📊 Analysis</option>
+                    <option value="monitoring">👁 Monitoring</option>
+                    <option value="other">📝 Other</option>
+                </select>
+                <button @click="scheduleCategoryFilter = ''; fetchScheduledRoutines()" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Clear filter">
+                    <span class="material-symbols-outlined text-[20px]">filter_alt_off</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div x-show="scheduleLoading" class="flex items-center justify-center py-20">
+            <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+                <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Loading schedule...</span>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="!scheduleLoading && scheduledRoutines.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
+            <span class="material-symbols-outlined text-[64px] text-slate-300 dark:text-slate-600 mb-4">event_busy</span>
+            <h3 class="text-lg font-semibold text-slate-500 dark:text-slate-400 mb-1">No routines scheduled</h3>
+            <p class="text-sm text-slate-400 dark:text-slate-500">Add routines via the API to see them here</p>
+        </div>
+
+        <!-- Timeline -->
+        <div x-show="!scheduleLoading && scheduledRoutines.length > 0" class="space-y-3 ml-2 border-l-2 border-slate-200 dark:border-slate-700 pl-6 relative">
+            <template x-for="routine in scheduledRoutines" :key="routine.id">
+                <div class="relative group">
+                    <!-- Timeline dot (green=enabled, gray=disabled) -->
+                    <div class="absolute -left-[31px] top-4 size-4 rounded-full border-2 border-white dark:border-background-dark transition-colors" :class="routine.enabled ? 'bg-emerald-500' : 'bg-slate-400'"></div>
+                    <!-- Card -->
+                    <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 p-4 transition-all hover:shadow-md" :class="!routine.enabled && 'opacity-50'">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex items-start gap-3 flex-1 min-w-0">
+                                <!-- Time -->
+                                <div class="flex-shrink-0 text-center min-w-[60px]">
+                                    <span class="text-lg font-bold text-slate-900 dark:text-white" x-text="routine.schedule_time"></span>
+                                </div>
+                                <!-- Category Icon -->
+                                <span class="text-xl flex-shrink-0 mt-0.5" x-text="getScheduleIcon(routine.category)"></span>
+                                <!-- Content -->
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                        <h4 class="font-semibold text-slate-900 dark:text-white text-sm" x-text="routine.title"></h4>
+                                        <!-- Frequency badge -->
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary" x-text="getFrequencyBadge(routine)"></span>
+                                        <!-- Category badge -->
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider" :class="getScheduleBadgeClass(routine.category)" x-text="routine.category"></span>
+                                    </div>
+                                    <p x-show="routine.description" class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed" x-text="routine.description"></p>
+                                </div>
+                            </div>
+                            <!-- Toggle -->
+                            <button @click="toggleRoutine(routine)" class="flex-shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 dark:focus:ring-offset-background-dark" :class="routine.enabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'">
+                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm" :class="routine.enabled ? 'translate-x-6' : 'translate-x-1'"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
     <!-- Floating Add Button (Mobile) -->
     <button x-show="activeTab === 'kanban'" @click="openAddTask('backlog')" class="fixed bottom-6 right-6 md:hidden size-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center active:scale-95 transition-transform z-40">
         <span class="material-symbols-outlined text-[32px]">add</span>
@@ -350,6 +440,10 @@
                 activityDateFilter: '',
                 activityTypeFilter: '',
                 activityMeta: { current_page: 1, last_page: 1, total: 0 },
+                // Schedule state
+                scheduledRoutines: [],
+                scheduleLoading: false,
+                scheduleCategoryFilter: '',
 
                 init() {
                     const data = window.initialTasks;
@@ -629,6 +723,66 @@
 
                 formatActivityTime(datetime) {
                     return new Date(datetime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+                },
+
+                // ─── Schedule Methods ───
+
+                fetchScheduledRoutines() {
+                    this.scheduleLoading = true;
+                    let url = '/api/scheduled-routines';
+                    if (this.scheduleCategoryFilter) url += `?category=${this.scheduleCategoryFilter}`;
+
+                    fetch(url, {
+                        headers: { 'Authorization': 'Bearer {{ config("app.api_token", "podklanec") }}' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.scheduledRoutines = data.data;
+                        }
+                        this.scheduleLoading = false;
+                    })
+                    .catch(() => { this.scheduleLoading = false; });
+                },
+
+                toggleRoutine(routine) {
+                    const newEnabled = !routine.enabled;
+                    fetch(`/api/scheduled-routines/${routine.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer {{ config("app.api_token", "podklanec") }}'
+                        },
+                        body: JSON.stringify({ enabled: newEnabled })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            routine.enabled = newEnabled;
+                        }
+                    });
+                },
+
+                getScheduleIcon(category) {
+                    return { email: '📧', sms: '📱', orders: '🛒', analysis: '📊', monitoring: '👁', other: '📝' }[category] || '📝';
+                },
+
+                getFrequencyBadge(routine) {
+                    if (routine.frequency) return routine.frequency;
+                    if (routine.schedule_type === 'daily') return 'Daily ' + routine.schedule_time;
+                    if (routine.schedule_type === 'hourly') return 'Hourly ' + routine.schedule_time;
+                    return routine.schedule_type;
+                },
+
+                getScheduleBadgeClass(category) {
+                    return {
+                        email: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400',
+                        sms: 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400',
+                        orders: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400',
+                        analysis: 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400',
+                        monitoring: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400',
+                        other: 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400'
+                    }[category] || 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400';
                 }
             }
         }
