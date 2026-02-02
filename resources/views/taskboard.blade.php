@@ -54,6 +54,19 @@
                 </div>
                 <h1 class="text-slate-900 dark:text-white text-xl font-bold leading-tight tracking-tight">Task Board</h1>
             </div>
+            <div class="flex items-center gap-4">
+                <!-- Tab Switcher -->
+                <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+                    <button @click="activeTab = 'kanban'" :class="activeTab === 'kanban' ? 'bg-white dark:bg-card-dark text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all">
+                        <span class="material-symbols-outlined text-[18px]">view_kanban</span>
+                        <span class="hidden sm:inline">Board</span>
+                    </button>
+                    <button @click="activeTab = 'activity'; fetchActivityLogs()" :class="activeTab === 'activity' ? 'bg-white dark:bg-card-dark text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all">
+                        <span class="material-symbols-outlined text-[18px]">timeline</span>
+                        <span class="hidden sm:inline">Activity</span>
+                    </button>
+                </div>
+            </div>
             <div class="flex items-center gap-3">
                 <button @click="darkMode = !darkMode; localStorage.setItem('theme', darkMode ? 'dark' : 'light')" 
                         class="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-primary transition-colors hover:bg-slate-200 dark:hover:bg-slate-700">
@@ -72,7 +85,7 @@
     </header>
 
     <!-- Main Kanban Board -->
-    <main class="p-4 lg:p-8 max-w-[1800px] mx-auto">
+    <main x-show="activeTab === 'kanban'" class="p-4 lg:p-8 max-w-[1800px] mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
             
             <!-- Backlog Column -->
@@ -138,8 +151,105 @@
         </div>
     </main>
 
+    <!-- Activity Log View -->
+    <div x-show="activeTab === 'activity'" x-cloak class="p-4 lg:p-8 max-w-[1200px] mx-auto">
+        <!-- Activity Header -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">timeline</span>
+                    Alex's Activity Log
+                </h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Track emails, SMS, fixes, and more</p>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <input type="date" x-model="activityDateFilter" @change="fetchActivityLogs()" class="flex-1 sm:flex-none px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                <select x-model="activityTypeFilter" @change="fetchActivityLogs()" class="flex-1 sm:flex-none px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-card-dark text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+                    <option value="">All Types</option>
+                    <option value="email">📧 Email</option>
+                    <option value="sms">📱 SMS</option>
+                    <option value="order_fix">🛒 Order Fix</option>
+                    <option value="analysis">📊 Analysis</option>
+                    <option value="integration">🔌 Integration</option>
+                    <option value="other">📝 Other</option>
+                </select>
+                <button @click="activityDateFilter = ''; activityTypeFilter = ''; fetchActivityLogs()" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Clear filters">
+                    <span class="material-symbols-outlined text-[20px]">filter_alt_off</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div x-show="activityLoading" class="flex items-center justify-center py-20">
+            <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+                <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Loading activity...</span>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="!activityLoading && activityGroups.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
+            <span class="material-symbols-outlined text-[64px] text-slate-300 dark:text-slate-600 mb-4">event_note</span>
+            <h3 class="text-lg font-semibold text-slate-500 dark:text-slate-400 mb-1">No activity yet</h3>
+            <p class="text-sm text-slate-400 dark:text-slate-500">Activity logs will appear here as Alex works</p>
+        </div>
+
+        <!-- Timeline -->
+        <div x-show="!activityLoading && activityGroups.length > 0" class="space-y-8">
+            <template x-for="group in activityGroups" :key="group.date">
+                <div>
+                    <!-- Date Header -->
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-semibold">
+                            <span class="material-symbols-outlined text-[16px]">calendar_today</span>
+                            <span x-text="group.dateLabel"></span>
+                        </div>
+                        <div class="flex-1 h-px bg-slate-200 dark:bg-slate-700"></div>
+                        <span class="text-xs text-slate-400 dark:text-slate-500" x-text="group.items.length + ' entries'"></span>
+                    </div>
+
+                    <!-- Activity Items -->
+                    <div class="space-y-3 ml-2 border-l-2 border-slate-200 dark:border-slate-700 pl-6 relative">
+                        <template x-for="item in group.items" :key="item.id">
+                            <div class="relative group">
+                                <!-- Timeline dot -->
+                                <div class="absolute -left-[31px] top-3 size-4 rounded-full border-2 border-white dark:border-background-dark" :class="getActivityDotColor(item.type)"></div>
+                                <!-- Card -->
+                                <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 p-4 transition-all hover:shadow-md">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex items-start gap-3 flex-1 min-w-0">
+                                            <span class="text-xl flex-shrink-0 mt-0.5" x-text="getActivityIcon(item.type)"></span>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                                    <h4 class="font-semibold text-slate-900 dark:text-white text-sm" x-text="item.title"></h4>
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider" :class="getActivityBadgeClass(item.type)" x-text="item.type.replace('_', ' ')"></span>
+                                                </div>
+                                                <p x-show="item.description" class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed" x-text="item.description"></p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap flex-shrink-0" x-text="formatActivityTime(item.created_at)"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Load More -->
+        <div x-show="!activityLoading && activityMeta.current_page < activityMeta.last_page" class="flex justify-center mt-8">
+            <button @click="loadMoreActivity()" class="px-6 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                Load More
+            </button>
+        </div>
+    </div>
+
     <!-- Floating Add Button (Mobile) -->
-    <button @click="openAddTask('backlog')" class="fixed bottom-6 right-6 md:hidden size-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center active:scale-95 transition-transform z-40">
+    <button x-show="activeTab === 'kanban'" @click="openAddTask('backlog')" class="fixed bottom-6 right-6 md:hidden size-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center active:scale-95 transition-transform z-40">
         <span class="material-symbols-outlined text-[32px]">add</span>
     </button>
 
@@ -225,6 +335,7 @@
 
         function taskboard() {
             return {
+                activeTab: 'kanban',
                 tasks: [],
                 showModal: false,
                 editingTask: null,
@@ -232,6 +343,13 @@
                 tagsInput: '',
                 _sortables: [],
                 _dragging: false,
+                // Activity Log state
+                activityLogs: [],
+                activityGroups: [],
+                activityLoading: false,
+                activityDateFilter: '',
+                activityTypeFilter: '',
+                activityMeta: { current_page: 1, last_page: 1, total: 0 },
 
                 init() {
                     const data = window.initialTasks;
@@ -430,6 +548,87 @@
                             this.closeModal();
                         }
                     });
+                },
+
+                // ─── Activity Log Methods ───
+
+                fetchActivityLogs(page = 1) {
+                    this.activityLoading = true;
+                    if (page === 1) this.activityLogs = [];
+
+                    let url = `/api/activity-logs?page=${page}`;
+                    if (this.activityDateFilter) url += `&date=${this.activityDateFilter}`;
+                    if (this.activityTypeFilter) url += `&type=${this.activityTypeFilter}`;
+
+                    fetch(url, {
+                        headers: { 'Authorization': 'Bearer {{ config("app.api_token", "podklanec") }}' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (page === 1) {
+                                this.activityLogs = data.data;
+                            } else {
+                                this.activityLogs = [...this.activityLogs, ...data.data];
+                            }
+                            this.activityMeta = data.meta;
+                            this.groupActivityLogs();
+                        }
+                        this.activityLoading = false;
+                    })
+                    .catch(() => { this.activityLoading = false; });
+                },
+
+                loadMoreActivity() {
+                    if (this.activityMeta.current_page < this.activityMeta.last_page) {
+                        this.fetchActivityLogs(this.activityMeta.current_page + 1);
+                    }
+                },
+
+                groupActivityLogs() {
+                    const groups = {};
+                    this.activityLogs.forEach(log => {
+                        const date = log.created_at.substring(0, 10);
+                        if (!groups[date]) groups[date] = [];
+                        groups[date].push(log);
+                    });
+                    const today = new Date().toISOString().substring(0, 10);
+                    const yesterday = new Date(Date.now() - 86400000).toISOString().substring(0, 10);
+                    this.activityGroups = Object.keys(groups).sort().reverse().map(date => ({
+                        date,
+                        dateLabel: date === today ? 'Today' : date === yesterday ? 'Yesterday' : new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }),
+                        items: groups[date]
+                    }));
+                },
+
+                getActivityIcon(type) {
+                    return { email: '📧', sms: '📱', order_fix: '🛒', analysis: '📊', integration: '🔌', other: '📝' }[type] || '📝';
+                },
+
+                getActivityDotColor(type) {
+                    return {
+                        email: 'bg-blue-500',
+                        sms: 'bg-green-500',
+                        order_fix: 'bg-orange-500',
+                        analysis: 'bg-purple-500',
+                        integration: 'bg-cyan-500',
+                        other: 'bg-slate-400'
+                    }[type] || 'bg-slate-400';
+                },
+
+                getActivityBadgeClass(type) {
+                    return {
+                        email: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400',
+                        sms: 'bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400',
+                        order_fix: 'bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-400',
+                        analysis: 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-400',
+                        integration: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400',
+                        other: 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400'
+                    }[type] || 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400';
+                },
+
+                formatActivityTime(datetime) {
+                    return new Date(datetime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
                 }
             }
         }
