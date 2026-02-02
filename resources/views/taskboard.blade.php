@@ -57,16 +57,16 @@
             <div class="flex items-center gap-4">
                 <!-- Tab Switcher -->
                 <div class="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                    <button @click="activeTab = 'kanban'" :class="activeTab === 'kanban' ? 'bg-white dark:bg-card-dark text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all">
-                        <span class="material-symbols-outlined text-[18px]">view_kanban</span>
+                    <button @click="activeTab = 'kanban'" :class="activeTab === 'kanban' ? 'bg-white dark:bg-card-dark text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center justify-center gap-1.5 px-4 sm:px-3 py-2.5 sm:py-1.5 rounded-md text-sm font-medium transition-all min-w-[48px]">
+                        <span class="material-symbols-outlined text-[20px] sm:text-[18px]">view_kanban</span>
                         <span class="hidden sm:inline">Board</span>
                     </button>
-                    <button @click="activeTab = 'activity'; fetchActivityLogs()" :class="activeTab === 'activity' ? 'bg-white dark:bg-card-dark text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all">
-                        <span class="material-symbols-outlined text-[18px]">timeline</span>
+                    <button @click="activeTab = 'activity'; fetchActivityLogs()" :class="activeTab === 'activity' ? 'bg-white dark:bg-card-dark text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center justify-center gap-1.5 px-4 sm:px-3 py-2.5 sm:py-1.5 rounded-md text-sm font-medium transition-all min-w-[48px]">
+                        <span class="material-symbols-outlined text-[20px] sm:text-[18px]">timeline</span>
                         <span class="hidden sm:inline">Activity</span>
                     </button>
-                    <button @click="activeTab = 'schedule'; fetchScheduledRoutines()" :class="activeTab === 'schedule' ? 'bg-white dark:bg-card-dark text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all">
-                        <span class="material-symbols-outlined text-[18px]">schedule</span>
+                    <button @click="activeTab = 'schedule'; fetchScheduledRoutines()" :class="activeTab === 'schedule' ? 'bg-white dark:bg-card-dark text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center justify-center gap-1.5 px-4 sm:px-3 py-2.5 sm:py-1.5 rounded-md text-sm font-medium transition-all min-w-[48px]">
+                        <span class="material-symbols-outlined text-[20px] sm:text-[18px]">schedule</span>
                         <span class="hidden sm:inline">Schedule</span>
                     </button>
                 </div>
