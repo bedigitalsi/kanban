@@ -300,14 +300,30 @@
         </div>
 
         <!-- Timeline -->
-        <div x-show="!scheduleLoading && scheduledRoutines.length > 0" class="space-y-3 ml-2 border-l-2 border-slate-200 dark:border-slate-700 pl-6 relative">
+        <div x-show="!scheduleLoading && scheduledRoutines.length > 0" class="space-y-3 sm:ml-2 sm:border-l-2 border-slate-200 dark:border-slate-700 sm:pl-6 relative">
             <template x-for="routine in scheduledRoutines" :key="routine.id">
                 <div class="relative group">
-                    <!-- Timeline dot (green=enabled, gray=disabled) -->
-                    <div class="absolute -left-[31px] top-4 size-4 rounded-full border-2 border-white dark:border-background-dark transition-colors" :class="routine.enabled ? 'bg-emerald-500' : 'bg-slate-400'"></div>
+                    <!-- Timeline dot (green=enabled, gray=disabled) - hidden on mobile -->
+                    <div class="hidden sm:block absolute -left-[31px] top-4 size-4 rounded-full border-2 border-white dark:border-background-dark transition-colors" :class="routine.enabled ? 'bg-emerald-500' : 'bg-slate-400'"></div>
                     <!-- Card -->
                     <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 p-4 transition-all hover:shadow-md" :class="!routine.enabled && 'opacity-50'">
-                        <div class="flex items-start justify-between gap-3">
+                        <!-- Mobile layout -->
+                        <div class="sm:hidden">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg" x-text="getScheduleIcon(routine.category)"></span>
+                                    <span class="text-sm font-bold text-primary" x-text="routine.schedule_time"></span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary" x-text="getFrequencyBadge(routine)"></span>
+                                </div>
+                                <button @click="toggleRoutine(routine)" class="flex-shrink-0 relative inline-flex h-6 w-11 items-center rounded-full transition-colors" :class="routine.enabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'">
+                                    <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm" :class="routine.enabled ? 'translate-x-6' : 'translate-x-1'"></span>
+                                </button>
+                            </div>
+                            <h4 class="font-semibold text-slate-900 dark:text-white text-sm mb-1" x-text="routine.title"></h4>
+                            <p x-show="routine.description" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed" x-text="routine.description"></p>
+                        </div>
+                        <!-- Desktop layout -->
+                        <div class="hidden sm:flex items-start justify-between gap-3">
                             <div class="flex items-start gap-3 flex-1 min-w-0">
                                 <!-- Time -->
                                 <div class="flex-shrink-0 text-center min-w-[60px]">
