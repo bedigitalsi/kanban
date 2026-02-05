@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\ScheduledRoutineController;
+use App\Http\Controllers\Api\ProjectController;
 
 // API routes with Bearer token authentication
 Route::middleware('api.auth')->group(function () {
@@ -17,4 +18,7 @@ Route::middleware('api.auth')->group(function () {
     Route::post('scheduled-routines', [ScheduledRoutineController::class, 'store']);
     Route::put('scheduled-routines/{id}', [ScheduledRoutineController::class, 'update']);
     Route::delete('scheduled-routines/{id}', [ScheduledRoutineController::class, 'destroy']);
+
+    Route::apiResource('projects', ProjectController::class);
+    Route::post('projects/positions', [ProjectController::class, 'updatePositions'] ?? null);
 });

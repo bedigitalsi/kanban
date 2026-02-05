@@ -69,6 +69,10 @@
                         <span class="material-symbols-outlined text-[20px] sm:text-[18px]">schedule</span>
                         <span class="hidden sm:inline">Schedule</span>
                     </button>
+                    <button @click="activeTab = 'projects'; fetchProjects()" :class="activeTab === 'projects' ? 'bg-white dark:bg-card-dark text-primary shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center justify-center gap-1.5 px-4 sm:px-3 py-2.5 sm:py-1.5 rounded-md text-sm font-medium transition-all min-w-[48px]">
+                        <span class="material-symbols-outlined text-[20px] sm:text-[18px]">folder_special</span>
+                        <span class="hidden sm:inline">Projects</span>
+                    </button>
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -354,6 +358,310 @@
         </div>
     </div>
 
+    <!-- Projects View -->
+    <div x-show="activeTab === 'projects'" x-cloak class="p-4 lg:p-8 max-w-[1400px] mx-auto">
+        <!-- Projects Header -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">folder_special</span>
+                    Projects
+                </h2>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                    <span x-text="projects.length"></span> active projects
+                </p>
+            </div>
+            <button @click="openProjectModal()" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                New Project
+            </button>
+        </div>
+
+        <!-- Loading State -->
+        <div x-show="projectsLoading" class="flex items-center justify-center py-20">
+            <div class="flex items-center gap-3 text-slate-500 dark:text-slate-400">
+                <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Loading projects...</span>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="!projectsLoading && projects.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
+            <span class="material-symbols-outlined text-[64px] text-slate-300 dark:text-slate-600 mb-4">folder_off</span>
+            <h3 class="text-lg font-semibold text-slate-500 dark:text-slate-400 mb-1">No projects yet</h3>
+            <p class="text-sm text-slate-400 dark:text-slate-500 mb-4">Add your first project to get started</p>
+            <button @click="openProjectModal()" class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Add Project
+            </button>
+        </div>
+
+        <!-- Projects Grid -->
+        <div x-show="!projectsLoading && projects.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <template x-for="project in projects" :key="project.id">
+                <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all hover:shadow-lg group cursor-pointer" @click="openProjectDetail(project)">
+                    <!-- Color accent bar -->
+                    <div class="h-1.5" :style="'background-color: ' + (project.color || '#13b6ec')"></div>
+                    
+                    <div class="p-5">
+                        <!-- Header -->
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <span class="text-2xl" x-text="project.icon || '📁'"></span>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors" x-text="project.name"></h3>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-xs" x-text="getProjectStatusEmoji(project.status)"></span>
+                                        <span class="text-xs text-slate-500 dark:text-slate-400 capitalize" x-text="project.status"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button @click.stop="openProjectModal(project)" class="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                            </button>
+                        </div>
+                        
+                        <!-- Description -->
+                        <p x-show="project.description" class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2" x-text="project.description"></p>
+                        
+                        <!-- Tech Stack -->
+                        <div x-show="project.tech_stack && project.tech_stack.length > 0" class="flex flex-wrap gap-1.5 mb-4">
+                            <template x-for="tech in (project.tech_stack || []).slice(0, 5)" :key="tech">
+                                <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs rounded-md" x-text="tech"></span>
+                            </template>
+                            <span x-show="project.tech_stack && project.tech_stack.length > 5" class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-500 text-xs rounded-md" x-text="'+' + (project.tech_stack.length - 5)"></span>
+                        </div>
+                        
+                        <!-- Links -->
+                        <div class="flex items-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                            <a x-show="project.url" :href="project.url" target="_blank" @click.stop class="flex items-center gap-1 text-xs text-slate-500 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-[14px]">language</span>
+                                <span>Live</span>
+                            </a>
+                            <a x-show="project.github_url" :href="project.github_url" target="_blank" @click.stop class="flex items-center gap-1 text-xs text-slate-500 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-[14px]">code</span>
+                                <span>GitHub</span>
+                            </a>
+                            <a x-show="project.docs_url" :href="project.docs_url" target="_blank" @click.stop class="flex items-center gap-1 text-xs text-slate-500 hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-[14px]">description</span>
+                                <span>Docs</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Project Detail Modal -->
+    <div x-show="showProjectDetail" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-start justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="showProjectDetail" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 transition-opacity">
+                <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" @click="showProjectDetail = false"></div>
+            </div>
+
+            <div x-show="showProjectDetail" x-transition class="relative z-10 inline-block align-top bg-white dark:bg-card-dark rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-3xl sm:w-full border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+                <!-- Color bar -->
+                <div class="h-2" :style="'background-color: ' + (selectedProject?.color || '#13b6ec')"></div>
+                
+                <div class="p-6">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <span class="text-4xl" x-text="selectedProject?.icon || '📁'"></span>
+                            <div>
+                                <h2 class="text-2xl font-bold text-slate-900 dark:text-white" x-text="selectedProject?.name"></h2>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-sm" x-text="getProjectStatusEmoji(selectedProject?.status)"></span>
+                                    <span class="text-sm text-slate-500 dark:text-slate-400 capitalize" x-text="selectedProject?.status"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button @click="openProjectModal(selectedProject)" class="p-2 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
+                                <span class="material-symbols-outlined">edit</span>
+                            </button>
+                            <button @click="showProjectDetail = false" class="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div x-show="selectedProject?.description" class="mb-6">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Description</h4>
+                        <p class="text-slate-700 dark:text-slate-300" x-text="selectedProject?.description"></p>
+                    </div>
+                    
+                    <!-- Links -->
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        <a x-show="selectedProject?.url" :href="selectedProject?.url" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors text-sm font-medium">
+                            <span class="material-symbols-outlined text-[18px]">language</span>
+                            Production
+                        </a>
+                        <a x-show="selectedProject?.staging_url" :href="selectedProject?.staging_url" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg hover:bg-amber-500/20 transition-colors text-sm font-medium">
+                            <span class="material-symbols-outlined text-[18px]">science</span>
+                            Staging
+                        </a>
+                        <a x-show="selectedProject?.github_url" :href="selectedProject?.github_url" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm font-medium">
+                            <span class="material-symbols-outlined text-[18px]">code</span>
+                            GitHub
+                        </a>
+                        <a x-show="selectedProject?.docs_url" :href="selectedProject?.docs_url" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-sm font-medium">
+                            <span class="material-symbols-outlined text-[18px]">description</span>
+                            Documentation
+                        </a>
+                    </div>
+                    
+                    <!-- Tech Stack -->
+                    <div x-show="selectedProject?.tech_stack && selectedProject.tech_stack.length > 0" class="mb-6">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Tech Stack</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <template x-for="tech in (selectedProject?.tech_stack || [])" :key="tech">
+                                <span class="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm rounded-lg" x-text="tech"></span>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <!-- API Details -->
+                    <div x-show="selectedProject?.api_details" class="mb-6">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">API Details</h4>
+                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 font-mono text-sm">
+                            <div x-show="selectedProject?.api_details?.base_url" class="mb-2">
+                                <span class="text-slate-500">Base URL:</span> <span class="text-primary" x-text="selectedProject?.api_details?.base_url"></span>
+                            </div>
+                            <div x-show="selectedProject?.api_details?.token_hint" class="mb-2">
+                                <span class="text-slate-500">Token:</span> <span class="text-slate-700 dark:text-slate-300" x-text="selectedProject?.api_details?.token_hint"></span>
+                            </div>
+                            <div x-show="selectedProject?.api_details?.notes">
+                                <span class="text-slate-500">Notes:</span> <span class="text-slate-700 dark:text-slate-300" x-text="selectedProject?.api_details?.notes"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div x-show="selectedProject?.notes" class="mb-6">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Notes</h4>
+                        <div class="prose prose-sm dark:prose-invert max-w-none bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4" x-html="marked.parse(selectedProject?.notes || '')"></div>
+                    </div>
+                    
+                    <!-- Quick Reference -->
+                    <div x-show="selectedProject?.quick_reference" class="mb-6">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Quick Reference</h4>
+                        <div class="bg-slate-900 dark:bg-black rounded-lg p-4 font-mono text-sm text-green-400 whitespace-pre-wrap" x-text="selectedProject?.quick_reference"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Edit Modal -->
+    <div x-show="showProjectModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-start justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="showProjectModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 transition-opacity">
+                <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" @click="closeProjectModal()"></div>
+            </div>
+
+            <div x-show="showProjectModal" x-transition class="relative z-10 inline-block align-top bg-white dark:bg-card-dark rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-2xl sm:w-full border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">folder_special</span>
+                            <span x-text="editingProject ? 'Edit Project' : 'New Project'"></span>
+                        </h3>
+                        <button @click="closeProjectModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </div>
+                    
+                    <form @submit.prevent="saveProject()" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Name *</label>
+                                <input type="text" x-model="projectForm.name" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="Project name" required>
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Status</label>
+                                <select x-model="projectForm.status" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors">
+                                    <option value="active">🟢 Active</option>
+                                    <option value="paused">🟡 Paused</option>
+                                    <option value="completed">✅ Completed</option>
+                                    <option value="archived">📦 Archived</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Icon (emoji)</label>
+                                <input type="text" x-model="projectForm.icon" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="📁">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Color</label>
+                                <input type="color" x-model="projectForm.color" class="w-full h-12 px-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 cursor-pointer">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Description</label>
+                            <textarea x-model="projectForm.description" rows="2" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="Brief project description..."></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Production URL</label>
+                                <input type="url" x-model="projectForm.url" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="https://...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Staging URL</label>
+                                <input type="url" x-model="projectForm.staging_url" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="https://staging...">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">GitHub URL</label>
+                                <input type="url" x-model="projectForm.github_url" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="https://github.com/...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Docs URL</label>
+                                <input type="url" x-model="projectForm.docs_url" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="https://docs...">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Tech Stack (comma separated)</label>
+                            <input type="text" x-model="techStackInput" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="Laravel, Vue, MySQL, Redis...">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Notes (markdown)</label>
+                            <textarea x-model="projectForm.notes" rows="4" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="Important notes, credentials hints, etc..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">Quick Reference (commands, shortcuts)</label>
+                            <textarea x-model="projectForm.quick_reference" rows="3" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors" placeholder="php artisan serve&#10;npm run dev&#10;..."></textarea>
+                        </div>
+
+                        <div class="flex gap-3 pt-4">
+                            <button type="submit" class="flex-1 py-3 px-4 bg-primary text-white font-medium rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]" x-text="editingProject ? 'save' : 'add'"></span>
+                                <span x-text="editingProject ? 'Update Project' : 'Create Project'"></span>
+                            </button>
+                            <button x-show="editingProject" @click="deleteProject()" type="button" class="py-3 px-4 bg-red-500/10 text-red-500 font-medium rounded-xl hover:bg-red-500/20 transition-colors">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Floating Add Button (Mobile) -->
     <button x-show="activeTab === 'kanban'" @click="openAddTask('backlog')" class="fixed bottom-6 right-6 md:hidden size-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 flex items-center justify-center active:scale-95 transition-transform z-40">
         <span class="material-symbols-outlined text-[32px]">add</span>
@@ -460,6 +768,15 @@
                 scheduledRoutines: [],
                 scheduleLoading: false,
                 scheduleCategoryFilter: '',
+                // Projects state
+                projects: [],
+                projectsLoading: false,
+                showProjectModal: false,
+                showProjectDetail: false,
+                editingProject: null,
+                selectedProject: null,
+                projectForm: {},
+                techStackInput: '',
 
                 init() {
                     const data = window.initialTasks;
@@ -800,6 +1117,116 @@
                         monitoring: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-400',
                         other: 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400'
                     }[category] || 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400';
+                },
+
+                // ─── Projects Methods ───
+
+                fetchProjects() {
+                    this.projectsLoading = true;
+                    fetch('/projects', {
+                        headers: { 'Accept': 'application/json' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        this.projects = data.data || [];
+                        this.projectsLoading = false;
+                    })
+                    .catch(() => { this.projectsLoading = false; });
+                },
+
+                openProjectModal(project = null) {
+                    this.editingProject = project;
+                    if (project) {
+                        this.projectForm = { ...project };
+                        this.techStackInput = (project.tech_stack || []).join(', ');
+                    } else {
+                        this.projectForm = {
+                            name: '',
+                            description: '',
+                            status: 'active',
+                            icon: '📁',
+                            color: '#13b6ec',
+                            url: '',
+                            staging_url: '',
+                            github_url: '',
+                            docs_url: '',
+                            tech_stack: [],
+                            notes: '',
+                            quick_reference: ''
+                        };
+                        this.techStackInput = '';
+                    }
+                    this.showProjectDetail = false;
+                    this.showProjectModal = true;
+                },
+
+                closeProjectModal() {
+                    this.showProjectModal = false;
+                    this.editingProject = null;
+                    this.projectForm = {};
+                },
+
+                openProjectDetail(project) {
+                    this.selectedProject = project;
+                    this.showProjectDetail = true;
+                },
+
+                saveProject() {
+                    // Parse tech stack
+                    this.projectForm.tech_stack = this.techStackInput
+                        .split(',')
+                        .map(t => t.trim())
+                        .filter(t => t.length > 0);
+
+                    const url = this.editingProject ? `/projects/${this.editingProject.id}` : '/projects';
+                    const method = this.editingProject ? 'PUT' : 'POST';
+
+                    fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify(this.projectForm)
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.data) {
+                            if (this.editingProject) {
+                                const idx = this.projects.findIndex(p => p.id === this.editingProject.id);
+                                if (idx !== -1) this.projects[idx] = data.data;
+                                if (this.selectedProject?.id === data.data.id) {
+                                    this.selectedProject = data.data;
+                                }
+                            } else {
+                                this.projects.push(data.data);
+                            }
+                            this.closeProjectModal();
+                        }
+                    });
+                },
+
+                deleteProject() {
+                    if (!confirm('Delete this project? Tasks will be unlinked but not deleted.')) return;
+                    
+                    fetch(`/projects/${this.editingProject.id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        this.projects = this.projects.filter(p => p.id !== this.editingProject.id);
+                        this.closeProjectModal();
+                        this.showProjectDetail = false;
+                    });
+                },
+
+                getProjectStatusEmoji(status) {
+                    return { active: '🟢', paused: '🟡', completed: '✅', archived: '📦' }[status] || '⚪';
                 }
             }
         }

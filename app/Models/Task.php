@@ -18,12 +18,18 @@ class Task extends Model
         'due_date',
         'tags',
         'position',
+        'project_id',
     ];
 
     protected $casts = [
         'tags' => 'array',
         'due_date' => 'date',
     ];
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
 
     // Scope for filtering by status
     public function scopeByStatus($query, $status)

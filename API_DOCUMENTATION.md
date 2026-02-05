@@ -274,6 +274,104 @@ DELETE /scheduled-routines/{id}
 
 ---
 
+## Projects
+
+Document your projects with all essential details in one place.
+
+### List Projects
+```
+GET /projects
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "CoreERP",
+      "slug": "coreerp",
+      "description": "Custom ERP system for Sansibe/Zavedno stores",
+      "status": "active",
+      "icon": "🚀",
+      "color": "#13b6ec",
+      "url": "http://192.168.0.119:8000",
+      "staging_url": null,
+      "github_url": "https://github.com/bedigitalsi/erp",
+      "docs_url": null,
+      "tech_stack": ["Laravel 12", "Livewire", "MySQL", "TailwindCSS"],
+      "api_details": {
+        "base_url": "http://192.168.0.119:8000",
+        "notes": "Local development on Mac mini"
+      },
+      "credentials": null,
+      "contacts": null,
+      "notes": "## Key Features\n- WooCommerce sync\n- Analytics dashboard\n- Multi-store support",
+      "quick_reference": "php artisan serve\nphp artisan orders:sync zavedno --days=7",
+      "position": 0,
+      "created_at": "2026-02-05T14:00:00.000000Z",
+      "updated_at": "2026-02-05T14:00:00.000000Z"
+    }
+  ]
+}
+```
+
+### Get Single Project
+```
+GET /projects/{id}
+```
+
+Returns project with linked tasks.
+
+### Create Project
+```
+POST /projects
+```
+
+**Body:**
+```json
+{
+  "name": "Required: project name",
+  "description": "Optional: brief description",
+  "status": "active|paused|completed|archived",
+  "icon": "📁 (emoji)",
+  "color": "#13b6ec (hex color)",
+  "url": "https://production-url.com",
+  "staging_url": "https://staging-url.com",
+  "github_url": "https://github.com/...",
+  "docs_url": "https://docs...",
+  "tech_stack": ["Laravel", "Vue", "MySQL"],
+  "api_details": {
+    "base_url": "https://api...",
+    "token_hint": "Bearer token in TOOLS.md",
+    "notes": "Any important API notes"
+  },
+  "credentials": {
+    "hint": "Stored in credentials/ folder"
+  },
+  "contacts": [
+    { "name": "John", "role": "Developer", "email": "john@..." }
+  ],
+  "notes": "Markdown supported notes",
+  "quick_reference": "Common commands and shortcuts"
+}
+```
+
+### Update Project
+```
+PUT /projects/{id}
+```
+
+### Delete Project
+```
+DELETE /projects/{id}
+```
+
+Unlinks tasks but doesn't delete them.
+
+---
+
 ## Quick Reference
 
 | Action | Method | Endpoint |
@@ -290,6 +388,11 @@ DELETE /scheduled-routines/{id}
 | Create routine | POST | `/scheduled-routines` |
 | Update routine | PUT | `/scheduled-routines/{id}` |
 | Delete routine | DELETE | `/scheduled-routines/{id}` |
+| List projects | GET | `/projects` |
+| Get project | GET | `/projects/{id}` |
+| Create project | POST | `/projects` |
+| Update project | PUT | `/projects/{id}` |
+| Delete project | DELETE | `/projects/{id}` |
 
 ---
 
