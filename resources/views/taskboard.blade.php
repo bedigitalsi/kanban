@@ -632,11 +632,12 @@
                     .then(r => r.json())
                     .then(data => {
                         if (data.success) {
+                            const task = data.data || data.task;
                             if (this.editingTask) {
                                 const idx = this.tasks.findIndex(t => t.id === this.editingTask.id);
-                                if (idx !== -1) this.tasks[idx] = data.task;
+                                if (idx !== -1) this.tasks[idx] = task;
                             } else {
-                                this.tasks.push(data.task);
+                                this.tasks.push(task);
                             }
                             this.renderAllColumns();
                             this.closeModal();
