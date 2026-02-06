@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
     public function showLogin()
     {
-        if (session('authenticated')) {
+        if (Auth::check()) {
             return redirect()->route('taskboard');
         }
         
@@ -19,24 +22,25 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $request->validate([
+            'email' => 'required|email',
             'password' => 'required'
         ]);
 
-        $appPassword = config('app.password', env('APP_PASSWORD', 'taskboard123'));
-
-        if ($request->password === $appPassword) {
-            session(['authenticated' => true]);
-            return redirect()->route('taskboard');
+        if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+            $request->session()->regenerate();
+            return redirect()->intended(route('taskboard'));
         }
 
         return back()->withErrors([
-            'password' => 'Invalid password.'
-        ]);
+            'email' => 'Invalid credentials.'
+        ])->withInput($request->only('email'));
     }
 
-    public function logout(): RedirectResponse
+    public function logout(Request $request): RedirectResponse
     {
-        session()->forget('authenticated');
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
         return redirect()->route('login');
     }
 }
