@@ -10,6 +10,7 @@ class Task extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'project',
         'title',
         'description',
         'status',
