@@ -399,64 +399,79 @@
             </button>
         </div>
 
-        <!-- Projects Grid -->
-        <div x-show="!projectsLoading && projects.length > 0" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            <template x-for="project in projects" :key="project.id">
-                <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all hover:shadow-lg group cursor-pointer" @click="openProjectDetail(project)">
-                    <!-- Color accent bar -->
-                    <div class="h-1.5" :style="'background-color: ' + (project.color || '#13b6ec')"></div>
-                    
-                    <div class="p-5">
-                        <!-- Header -->
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl" x-text="project.icon || '📁'"></span>
-                                <div>
-                                    <h3 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors" x-text="project.name"></h3>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <span class="text-xs" x-text="getProjectStatusEmoji(project.status)"></span>
-                                        <span class="text-xs text-slate-500 dark:text-slate-400 capitalize" x-text="project.status"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button @click.stop="openProjectModal(project)" class="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-primary/10 transition-all">
-                                <span class="material-symbols-outlined text-[18px]">edit</span>
-                            </button>
-                        </div>
-                        
-                        <!-- Description -->
-                        <p x-show="project.description" class="text-sm text-slate-600 dark:text-slate-400 mb-4 line-clamp-2" x-text="project.description"></p>
-                        
-                        <!-- Tech Stack -->
-                        <div x-show="project.tech_stack && project.tech_stack.length > 0" class="flex flex-wrap gap-1.5 mb-4">
-                            <template x-for="tech in (project.tech_stack || []).slice(0, 5)" :key="tech">
-                                <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs rounded-md" x-text="tech"></span>
-                            </template>
-                            <span x-show="project.tech_stack && project.tech_stack.length > 5" class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-500 text-xs rounded-md" x-text="'+' + (project.tech_stack.length - 5)"></span>
-                        </div>
-                        
-                        <!-- Links -->
-                        <div class="flex items-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                            <a x-show="project.url" :href="project.url" target="_blank" @click.stop class="flex items-center gap-1 text-xs text-slate-500 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined text-[14px]">language</span>
-                                <span>Live</span>
-                            </a>
-                            <a x-show="project.github_url" :href="project.github_url" target="_blank" @click.stop class="flex items-center gap-1 text-xs text-slate-500 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined text-[14px]">code</span>
-                                <span>GitHub</span>
-                            </a>
-                            <a x-show="project.docs_url" :href="project.docs_url" target="_blank" @click.stop class="flex items-center gap-1 text-xs text-slate-500 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined text-[14px]">description</span>
-                                <span>Docs</span>
-                            </a>
-                        </div>
-                    </div>
+        <!-- Projects Grid - Grouped by Company -->
+        <div x-show="!projectsLoading && projects.length > 0" class="space-y-8">
+            
+            <!-- Maneks Projects -->
+            <div x-show="projects.filter(p => p.company === 'maneks').length > 0">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Maneks</h3>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">Partnership with Marko Šarc</span>
                 </div>
-            </template>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <template x-for="project in projects.filter(p => p.company === 'maneks')" :key="project.id">
+                        <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all hover:shadow-lg group cursor-pointer" @click="openProjectDetail(project)">
+                            <div class="h-1.5 bg-blue-500"></div>
+                            <div class="p-4">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="text-xl" x-text="project.icon || '📁'"></span>
+                                    <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors" x-text="project.name"></h4>
+                                </div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2" x-text="project.description"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <!-- Sansibe Projects -->
+            <div x-show="projects.filter(p => p.company === 'sansibe').length > 0">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Sansibe</h3>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">Memory & Legacy Stores</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <template x-for="project in projects.filter(p => p.company === 'sansibe')" :key="project.id">
+                        <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all hover:shadow-lg group cursor-pointer" @click="openProjectDetail(project)">
+                            <div class="h-1.5 bg-emerald-500"></div>
+                            <div class="p-4">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="text-xl" x-text="project.icon || '📁'"></span>
+                                    <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors" x-text="project.name"></h4>
+                                </div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2" x-text="project.description"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <!-- BeDigital Projects -->
+            <div x-show="projects.filter(p => p.company === 'bedigital').length > 0">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">BeDigital</h3>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">Personal Tools & SaaS</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    <template x-for="project in projects.filter(p => p.company === 'bedigital')" :key="project.id">
+                        <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all hover:shadow-lg group cursor-pointer" @click="openProjectDetail(project)">
+                            <div class="h-1.5 bg-orange-500"></div>
+                            <div class="p-4">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <span class="text-xl" x-text="project.icon || '📁'"></span>
+                                    <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors" x-text="project.name"></h4>
+                                </div>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2" x-text="project.description"></p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
         </div>
-    </div>
-
-    <!-- Project Detail Modal -->
     <div x-show="showProjectDetail" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
         <div class="flex items-start justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div x-show="showProjectDetail" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 transition-opacity">
