@@ -399,73 +399,73 @@
             </button>
         </div>
 
-        <!-- Projects Grid - Grouped by Company -->
-        <div x-show="!projectsLoading && projects.length > 0" class="space-y-8">
+        <!-- Projects Grid - 3 Columns by Company -->
+        <div x-show="!projectsLoading && projects.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-6">
             
-            <!-- Maneks Projects -->
-            <div x-show="projects.filter(p => p.company === 'maneks').length > 0">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-3 h-3 rounded-full bg-blue-500"></div>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Maneks</h3>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Partnership with Marko Šarc</span>
+            <!-- Maneks Column -->
+            <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-orange-500/10">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                        <h3 class="font-bold text-slate-900 dark:text-white">Maneks</h3>
+                        <span class="text-xs text-slate-500 dark:text-slate-400 ml-auto" x-text="projects.filter(p => p.company === 'maneks').length + ' projects'"></span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Partnership with Marko</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div class="p-3 space-y-3 min-h-[300px]">
                     <template x-for="project in projects.filter(p => p.company === 'maneks')" :key="project.id">
-                        <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all hover:shadow-lg group cursor-pointer" @click="openProjectDetail(project)">
-                            <div class="h-1.5 bg-blue-500"></div>
-                            <div class="p-4">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <span class="text-xl" x-text="project.icon || '📁'"></span>
-                                    <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors" x-text="project.name"></h4>
-                                </div>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2" x-text="project.description"></p>
+                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700 hover:border-orange-500/50 transition-all cursor-pointer" @click="openProjectDetail(project)">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-lg" x-text="project.icon || '📁'"></span>
+                                <h4 class="font-semibold text-slate-900 dark:text-white text-sm" x-text="project.name"></h4>
                             </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2" x-text="project.description"></p>
                         </div>
                     </template>
                 </div>
             </div>
             
-            <!-- Sansibe Projects -->
-            <div x-show="projects.filter(p => p.company === 'sansibe').length > 0">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Sansibe</h3>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Memory & Legacy Stores</span>
+            <!-- Sansibe Column -->
+            <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-cyan-500/10">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-cyan-500"></div>
+                        <h3 class="font-bold text-slate-900 dark:text-white">Sansibe</h3>
+                        <span class="text-xs text-slate-500 dark:text-slate-400 ml-auto" x-text="projects.filter(p => p.company === 'sansibe').length + ' projects'"></span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Memory & Legacy Stores</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div class="p-3 space-y-3 min-h-[300px]">
                     <template x-for="project in projects.filter(p => p.company === 'sansibe')" :key="project.id">
-                        <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all hover:shadow-lg group cursor-pointer" @click="openProjectDetail(project)">
-                            <div class="h-1.5 bg-emerald-500"></div>
-                            <div class="p-4">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <span class="text-xl" x-text="project.icon || '📁'"></span>
-                                    <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors" x-text="project.name"></h4>
-                                </div>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2" x-text="project.description"></p>
+                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700 hover:border-cyan-500/50 transition-all cursor-pointer" @click="openProjectDetail(project)">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-lg" x-text="project.icon || '📁'"></span>
+                                <h4 class="font-semibold text-slate-900 dark:text-white text-sm" x-text="project.name"></h4>
                             </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2" x-text="project.description"></p>
                         </div>
                     </template>
                 </div>
             </div>
             
-            <!-- BeDigital Projects -->
-            <div x-show="projects.filter(p => p.company === 'bedigital').length > 0">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-3 h-3 rounded-full bg-orange-500"></div>
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">BeDigital</h3>
-                    <span class="text-xs text-slate-500 dark:text-slate-400">Personal Tools & SaaS</span>
+            <!-- BeDigital Column -->
+            <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                <div class="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-500/10">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full bg-slate-900 dark:bg-white"></div>
+                        <h3 class="font-bold text-slate-900 dark:text-white">BeDigital</h3>
+                        <span class="text-xs text-slate-500 dark:text-slate-400 ml-auto" x-text="projects.filter(p => p.company === 'bedigital').length + ' projects'"></span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Personal Tools & SaaS</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div class="p-3 space-y-3 min-h-[300px]">
                     <template x-for="project in projects.filter(p => p.company === 'bedigital')" :key="project.id">
-                        <div class="bg-white dark:bg-card-dark rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden transition-all hover:shadow-lg group cursor-pointer" @click="openProjectDetail(project)">
-                            <div class="h-1.5 bg-orange-500"></div>
-                            <div class="p-4">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <span class="text-xl" x-text="project.icon || '📁'"></span>
-                                    <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors" x-text="project.name"></h4>
-                                </div>
-                                <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2" x-text="project.description"></p>
+                        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 border border-slate-200 dark:border-slate-700 hover:border-slate-500/50 transition-all cursor-pointer" @click="openProjectDetail(project)">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-lg" x-text="project.icon || '📁'"></span>
+                                <h4 class="font-semibold text-slate-900 dark:text-white text-sm" x-text="project.name"></h4>
                             </div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2" x-text="project.description"></p>
                         </div>
                     </template>
                 </div>
