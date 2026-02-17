@@ -16,7 +16,7 @@ function submit() {
 <template>
     <div class="min-h-screen flex items-center justify-center bg-dark-bg">
         <div class="w-full max-w-sm">
-            <h1 class="text-2xl font-bold text-primary text-center mb-8">Taskboard</h1>
+            <h1 class="text-2xl font-bold text-primary text-center mb-8">Mission Control</h1>
             <form @submit.prevent="submit" class="bg-dark-card rounded-xl p-8 border border-dark-border space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-400 mb-1">Email</label>

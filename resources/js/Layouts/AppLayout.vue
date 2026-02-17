@@ -8,10 +8,12 @@ const darkMode = ref(false);
 const userMenuOpen = ref(false);
 
 const navItems = [
-    { name: 'Board', href: '/board', icon: 'dashboard' },
-    { name: 'Journal', href: '/journal', icon: 'book' },
+    { name: 'Dashboard', href: '/', icon: 'space_dashboard' },
+    { name: 'Tasks', href: '/tasks', icon: 'task_alt' },
+    { name: 'Journal', href: '/journal', icon: 'menu_book' },
     { name: 'Activity', href: '/activity', icon: 'timeline' },
-    { name: 'Schedule', href: '/schedule', icon: 'schedule' },
+    { name: 'Brain', href: '/brain', icon: 'psychology' },
+    { name: 'Routines', href: '/routines', icon: 'schedule' },
     { name: 'Projects', href: '/projects', icon: 'folder' },
 ];
 
@@ -53,7 +55,7 @@ function isActive(href) {
             ]"
         >
             <div class="flex h-16 items-center px-6">
-                <span class="text-xl font-bold text-primary">Taskboard</span>
+                <span class="text-xl font-bold text-primary">Mission Control</span>
             </div>
             <nav class="mt-2 px-3 space-y-1">
                 <Link
