@@ -9,9 +9,10 @@ use Illuminate\Support\Facades\Validator;
 
 class TaskboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::ordered()->get()->groupBy('status');
+        $board = $request->get('board', 'tasks');
+        $tasks = Task::where('board', $board)->ordered()->get()->groupBy('status');
         
         // Ensure all columns have arrays even if empty
         $tasksByStatus = [
@@ -21,7 +22,7 @@ class TaskboardController extends Controller
             'done' => $tasks->get('done', collect())->values(),
         ];
         
-        return view('taskboard', compact('tasksByStatus'));
+        return view('taskboard', compact('tasksByStatus', 'board'));
     }
 
     /**
@@ -37,6 +38,7 @@ class TaskboardController extends Controller
             'assigned_to' => 'nullable|in:sandi,alex',
             'due_date' => 'nullable|date',
             'tags' => 'nullable|array',
+            'board' => 'nullable|in:tasks,journal',
         ]);
 
         if ($validator->fails()) {
@@ -46,11 +48,13 @@ class TaskboardController extends Controller
             ], 422);
         }
 
-        // Get the next position for this status
-        $maxPosition = Task::where('status', $request->status)->max('position') ?? 0;
+        // Get the next position for this status within this board
+        $board = $request->get('board', 'tasks');
+        $maxPosition = Task::where('status', $request->status)->where('board', $board)->max('position') ?? 0;
 
         $task = Task::create(array_merge($request->all(), [
-            'position' => $maxPosition + 1
+            'position' => $maxPosition + 1,
+            'board' => $board,
         ]));
 
         return response()->json([

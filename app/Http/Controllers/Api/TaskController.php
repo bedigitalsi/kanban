@@ -17,6 +17,9 @@ class TaskController extends Controller
     {
         $query = Task::query()->ordered();
         
+        // Filter by board (default: tasks for backward compatibility)
+        $query->byBoard($request->get('board', 'tasks'));
+        
         // Filter by status
         if ($request->has('status')) {
             $query->byStatus($request->status);
@@ -54,7 +57,8 @@ class TaskController extends Controller
             'due_date' => 'nullable|date',
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:50',
-            'position' => 'nullable|integer|min:0'
+            'position' => 'nullable|integer|min:0',
+            'board' => 'nullable|in:tasks,journal'
         ]);
 
         if ($validator->fails()) {

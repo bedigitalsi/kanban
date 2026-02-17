@@ -92,6 +92,20 @@
         </div>
     </header>
 
+    <!-- Board Tabs (Tasks / Journal) -->
+    <div x-show="activeTab === 'kanban'" class="px-4 lg:px-8 pt-4 max-w-[1800px] mx-auto">
+        <div class="flex items-center gap-1 border-b border-slate-200 dark:border-slate-700">
+            <button @click="switchBoard('tasks')" :class="currentBoard === 'tasks' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-all -mb-px">
+                <span class="material-symbols-outlined text-[18px]">task_alt</span>
+                Tasks
+            </button>
+            <button @click="switchBoard('journal')" :class="currentBoard === 'journal' ? 'border-primary text-primary' : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'" class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 transition-all -mb-px">
+                <span class="material-symbols-outlined text-[18px]">menu_book</span>
+                Journal
+            </button>
+        </div>
+    </div>
+
     <!-- Main Kanban Board -->
     <main x-show="activeTab === 'kanban'" class="p-4 lg:p-8 max-w-[1800px] mx-auto">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
@@ -761,10 +775,12 @@
 
     <script>
         window.initialTasks = @json($tasksByStatus);
+        window.currentBoard = @json($board);
 
         function taskboard() {
             return {
                 activeTab: 'kanban',
+                currentBoard: window.currentBoard || 'tasks',
                 tasks: [],
                 showModal: false,
                 editingTask: null,
@@ -842,8 +858,28 @@
                     
                     const dueDate = task.due_date ? new Date(task.due_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
                     const description = task.description ? (typeof marked !== 'undefined' ? marked.parse(task.description) : task.description.replace(/\n/g, '<br>')) : '';
+                    const isJournal = this.currentBoard === 'journal';
+                    const createdDate = task.created_at ? new Date(task.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 
-                    div.innerHTML = `
+                    if (isJournal) {
+                        div.innerHTML = `
+                            <div class="flex items-center justify-between mb-2">
+                                <h4 class="text-slate-900 dark:text-white text-sm font-semibold leading-tight line-clamp-1">${this.escapeHtml(task.title)}</h4>
+                                <div class="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                                    <span class="material-symbols-outlined text-[18px] text-slate-400">more_horiz</span>
+                                </div>
+                            </div>
+                            ${description ? `<div class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-3 prose prose-sm max-w-none dark:prose-invert">${description}</div>` : ''}
+                            <div class="flex items-center justify-between border-t border-slate-200 dark:border-slate-700/50 pt-2 mt-auto">
+                                <div class="flex items-center gap-2">
+                                    <div class="flex gap-1.5">${tags}</div>
+                                    ${assignee ? `<div class="size-6 rounded-full ${assignee.color} flex items-center justify-center text-white text-[10px] font-bold border-2 border-white dark:border-slate-700">${assignee.avatar}</div>` : ''}
+                                </div>
+                                <span class="text-slate-400 dark:text-slate-500 text-[11px]">${createdDate}</span>
+                            </div>
+                        `;
+                    } else {
+                        div.innerHTML = `
                         <div class="flex items-center justify-between mb-3">
                             <div class="flex gap-2">${tags}</div>
                             <div class="flex items-center gap-1.5">
@@ -863,6 +899,7 @@
                             </div>
                         </div>
                     `;
+                    }
 
                     div.addEventListener('click', () => {
                         if (!this._dragging) {
@@ -927,9 +964,16 @@
                     });
                 },
 
+                switchBoard(board) {
+                    if (this.currentBoard === board) return;
+                    this.currentBoard = board;
+                    // Reload page with board param
+                    window.location.href = '/?board=' + board;
+                },
+
                 openAddTask(status) {
                     this.editingTask = null;
-                    this.formData = { title: '', description: '', status: status, priority: 'medium', assigned_to: '', due_date: '', tags: [] };
+                    this.formData = { title: '', description: '', status: status, priority: 'medium', assigned_to: '', due_date: '', tags: [], board: this.currentBoard };
                     this.tagsInput = '';
                     this.showModal = true;
                 },
@@ -953,13 +997,14 @@
 
                 saveTask() {
                     const url = this.editingTask ? `/tasks/${this.editingTask.id}` : '/tasks';
+                    const payload = { ...this.formData, board: this.currentBoard };
                     fetch(url, {
                         method: this.editingTask ? 'PUT' : 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
-                        body: JSON.stringify(this.formData)
+                        body: JSON.stringify(payload)
                     })
                     .then(r => r.json())
                     .then(data => {

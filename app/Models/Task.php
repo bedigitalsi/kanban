@@ -20,6 +20,7 @@ class Task extends Model
         'tags',
         'position',
         'project_id',
+        'board',
     ];
 
     protected $casts = [
@@ -30,6 +31,12 @@ class Task extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    // Scope for filtering by board
+    public function scopeByBoard($query, $board)
+    {
+        return $query->where('board', $board);
     }
 
     // Scope for filtering by status
