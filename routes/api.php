@@ -20,6 +20,8 @@ Route::middleware(ApiAuth::class)->group(function () {
     Route::post('/activity-logs', [ActivityLogController::class, 'store']);
 
     Route::get('/scheduled-routines', [ScheduledRoutineController::class, 'index']);
+    Route::post('/scheduled-routines/{id}/toggle', [ScheduledRoutineController::class, 'toggle']);
+    Route::put('/scheduled-routines/{id}', [ScheduledRoutineController::class, 'update']);
 
     Route::get('/projects', [ProjectController::class, 'index']);
     Route::post('/projects', [ProjectController::class, 'store']);

@@ -10,7 +10,8 @@ async function fetchRoutines() {
   try {
     const res = await fetch('/api/scheduled-routines', { credentials: 'same-origin' });
     const json = await res.json();
-    routines.value = Array.isArray(json) ? json : json.data || [];
+    const data = Array.isArray(json) ? json : json.data || [];
+    routines.value = data.map(r => ({ ...r, is_active: !!r.enabled }));
   } catch (e) {
     error.value = 'Failed to load routines';
   } finally {
@@ -79,7 +80,18 @@ function stripColor(r) {
 }
 
 async function toggleActive(routine) {
+  const prev = routine.is_active;
   routine.is_active = !routine.is_active;
+  try {
+    const csrf = document.querySelector('meta[name=csrf-token]')?.content || '';
+    await fetch('/api/scheduled-routines/' + routine.id + '/toggle', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'X-CSRF-TOKEN': csrf }
+    });
+  } catch (e) {
+    routine.is_active = prev;
+  }
 }
 </script>
 
