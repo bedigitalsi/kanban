@@ -77,6 +77,12 @@ const agents = ref([
     model: 'Claude Opus',
     channel: 'Sub-agent (no Telegram)',
     responsibilities: ['Product copy', 'Landing page copy', 'Coordinates GPT-4o + Gemini', 'Multi-model copy comparison', 'Final copy decisions'],
+    workflow: [
+      '1. Write SI master copy first (subtitle, description, benefits, ingredients, usage)',
+      '2. Run Gemini Batch API → localize to all other markets in one job (50% cheaper, ~5 min)',
+      '3. Review outputs for quality across markets',
+      '4. Hand off to Alex/Brandon to push to Brandy DB',
+    ],
     talks_to: ['alex', 'brandon'],
     color: '#06b6d4',
     level: 2,
@@ -214,6 +220,15 @@ function flowLabel(type) {
                 {{ r }}
               </li>
             </ul>
+            <div v-if="agent.workflow" class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-2">⚙️ Workflow</div>
+              <ol class="space-y-1.5">
+                <li v-for="step in agent.workflow" :key="step" class="text-xs text-gray-600 dark:text-gray-300 flex items-start gap-1.5">
+                  <span class="mt-0.5 shrink-0 font-bold" :style="{ color: agent.color }">›</span>
+                  {{ step }}
+                </li>
+              </ol>
+            </div>
             <div class="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
               <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Communicates with</div>
               <div class="flex flex-wrap gap-1.5">
