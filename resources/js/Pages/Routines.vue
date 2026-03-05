@@ -163,19 +163,9 @@ async function toggleActive(routine) {
             <!-- Footer -->
             <div class="flex items-center justify-between text-xs">
               <div class="flex items-center gap-3">
-                <!-- Last run -->
-                <span class="text-gray-500">
-                  Last: {{ relativeTime(r.last_run_at) }}
-                  <span v-if="r.last_status === 'success'" class="ml-0.5">✅</span>
-                  <span v-else-if="r.last_status === 'failure'" class="ml-0.5">❌</span>
-                </span>
-                <!-- Next run -->
-                <span v-if="r.next_run_at && r.is_active" class="text-gray-500">
-                  Next: {{ relativeTime(r.next_run_at) }}
-                </span>
+
               </div>
-              <!-- Run count -->
-              <span class="text-gray-600">{{ r.run_count ?? 0 }} runs</span>
+
             </div>
           </div>
         </div>
